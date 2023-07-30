@@ -3,7 +3,9 @@ import 'package:clone_insta/pages/signUpPage.dart';
 import 'package:clone_insta/services/auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
 class LogInPage extends StatefulWidget {
+
   static final String id= "login_page";
   const LogInPage({super.key});
 
@@ -15,6 +17,7 @@ class _LogInPageState extends State<LogInPage> {
   int? counta;
   bool isLoading = false;
   bool emailValid = false;
+
   var emailController = TextEditingController();
   var passwordController = TextEditingController();
 
@@ -23,18 +26,10 @@ class _LogInPageState extends State<LogInPage> {
     String password = passwordController.text.toString().trim();
 
     if(email.isEmpty || password.isEmpty) return;
-    if(!email.toString().endsWith('@gmail.com')) {
-      return;
-    }else{
-      print("please enter valid email");
-      setState(() {
-        emailValid = true;
-      });
-    };
-
     setState(() {
       isLoading = true;
     });
+    print("working1");
       AuthService.signInUser(email, password).then((value) => {
       _responseSignIn(value!),});
   }
@@ -43,10 +38,18 @@ class _LogInPageState extends State<LogInPage> {
     setState(() {
       isLoading = false;
     });
+    print("working");
     Navigator.pushReplacementNamed(context, HomePage.id);
   }
+
   _callSignUpPage(){
     Navigator.pushReplacementNamed(context, SignUpPage.id);
+  }
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _callHomePage();
   }
 
   @override
@@ -84,6 +87,7 @@ class _LogInPageState extends State<LogInPage> {
                         border: Border.all(width: 2,color: Colors.grey.shade300),
                       ),
                       child: TextField(
+                        controller: emailController,
                         decoration: InputDecoration(
                             hintText: "example@gmail.com",
                             border: InputBorder.none,
@@ -104,8 +108,7 @@ class _LogInPageState extends State<LogInPage> {
                         controller: passwordController,
                         decoration: InputDecoration(
                             hintText: "Password",
-                            border: InputBorder.none
-
+                            border: InputBorder.none,
                         ),
                       ),
                     ),
@@ -114,8 +117,7 @@ class _LogInPageState extends State<LogInPage> {
                       child: MaterialButton(
                         color: Colors.blue,
                         onPressed: (){
-                          _callHomePage();
-                        },
+                          _callHomePage();                        },
                         child: const Text("Log In",style: TextStyle(color: Colors.black),),
                       ),
                     ),
@@ -130,7 +132,7 @@ class _LogInPageState extends State<LogInPage> {
                           onTap: (){
                             _callSignUpPage();
                           },
-                          child: Text("Sign Up",style: TextStyle(color: Colors.blue,fontSize: 17),),
+                          child: Text("Sign Up",style: TextStyle(color: Colors.blue,fontSize: 17,fontWeight: FontWeight.bold),),
                         ),
                         SizedBox(width: 10),
                       ],
