@@ -2,8 +2,11 @@ import 'dart:io';
 import 'dart:core';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:clone_insta/services/auth_service.dart';
+import 'package:clone_insta/services/db_service.dart';
+import 'package:clone_insta/services/file_service.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import '../models/member_model.dart';
 import '../models/post_model.dart';
 class MyProfilePage extends StatefulWidget {
   final PageController? pageController;
@@ -20,21 +23,9 @@ class _MyProfilePageState extends State<MyProfilePage> {
   List <Post> items = [];
   File? _image;
   int axisCount = 1;
-  String username ='Sarvarbek', email ='ganiyevsarvarbek57@gmail.com', img_url='';
-  int count_post= 12,cout_followers=1232, count_following=12;
+  String fullname ='', email ='', img_url='';
+  int count_post= 2,cout_followers=102, count_following=252;
 
-  String img1 = "https://images.unsplash.com/photo-1625397982479-20bdac63537b";
-  String img2 = "https://images.unsplash.com/photo-1650285313450-39cd35418322";
-  String img3 = "https://images.unsplash.com/photo-1618091171668-e1c3cf1ffce2";
-
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    items.add(Post(img1, "new car"));
-    items.add(Post(img2, "This is my old car style"));
-    items.add(Post(img3, "This is my after car style"));
-  }
 
   final ImagePicker _picker = ImagePicker();
   _imageFromGallary()async {
@@ -43,28 +34,71 @@ class _MyProfilePageState extends State<MyProfilePage> {
     setState(() {
       _image = File(image!.path);
     });
+    _apiChangePhoto();
   }
+
   _imageFromCamera() async {
     XFile? image = await _picker.pickImage(
         imageQuality: 50, source: ImageSource.camera);
     setState(() {
       _image = File(image!.path);
     });
+    _apiChangePhoto();
   }
 
-  _profilePick(){
-    _moveFeed();
-    print('no problem');
-  }
 
-  _moveFeed(){
+  void _apiChangePhoto(){
+    if(_image == null)return;
     setState(() {
-      isLoading = false;
+      isLoading =true;
     });
-    _image = null;
-    widget.pageController!.animateToPage(0, duration: Duration(milliseconds: 200), curve: Curves.easeIn);
-
+    FileService.uploadUserImages(_image!).then((downloadUrl) => {
+      _apiUpdateUser(downloadUrl),
+    });
   }
+
+
+  _apiUpdateUser(String downloadUrl)async{
+    Member member = await DBService.loadMember();
+    member.img_url = downloadUrl;
+    await DBService.updateMember(member);
+    _apiloadMember();
+  }
+
+  void _apiloadMember(){
+    setState(() {
+      isLoading =true;
+    });
+    DBService.loadMember().then((value) => {
+      _showMemberInfo(value),
+    });
+  }
+
+   void _showMemberInfo(Member member) {
+     setState(() {
+       isLoading = true;
+       this.fullname = member.fullname!;
+       this.email = member.email!;
+       this.img_url = member.img_url!;
+     });
+   }
+
+
+  void _apiloadFeeds() {
+    setState(() {
+      isLoading = true;
+    });
+    DBService.loadPosts().then((value) => {
+      _resLoadPosts(value),
+    });
+  }
+
+  void _resLoadPosts(List<Post> posts){
+    items = posts;
+    count_post = posts.length;
+  }
+
+
   void _showPicker(context){
     showModalBottomSheet(
         context: context,
@@ -98,6 +132,13 @@ class _MyProfilePageState extends State<MyProfilePage> {
   }
 
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _apiloadMember();
+    _apiloadFeeds();
+  }
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
@@ -114,172 +155,182 @@ class _MyProfilePageState extends State<MyProfilePage> {
           SizedBox(width: 10,),
         ],
       ),
-      body: Stack(
-        children: [
-          Container(
-            width: double.infinity,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                SizedBox(height:3,),
-                //profile pick
-                GestureDetector(
-                    onTap: () {
-                      _showPicker(context);
-                    },
-                    child: Stack(
+      body: ListView(
+          scrollDirection: Axis.vertical,
+          children: [
+            Container(
+              height: MediaQuery.of(context).size.height,
+              width: double.infinity,
+              child: Stack(
+                children: [
+                  Container(
+                    width: double.infinity,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
+                        SizedBox(height:3,),
+                        //profile pick
+                        GestureDetector(
+                            onTap: () {
+                              _showPicker(context);
+                            },
+                            child: Stack(
+                              children: [
+                                Container(
+                                  padding: EdgeInsets.all(2),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(70),
+                                    border: Border.all(
+                                      width: 1.5,
+                                      color: Color.fromRGBO(193, 53, 132, 1),
+                                    ),
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(35),
+                                    child: img_url == null || img_url.isEmpty
+                                        ? Image(
+                                      image: AssetImage(
+                                          "assets/images/ic_person.png"),
+                                      width: 70,
+                                      height: 70,
+                                      fit: BoxFit.cover,
+                                    )
+                                        : Image.network(img_url,
+                                      height: 70,
+                                      width: 70,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                ),
+                                Container(
+                                  width: 80,
+                                  height: 80,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Icon(
+                                        Icons.add_circle,
+                                        color: Colors.purple,
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            )),
+
+                        SizedBox(height: 3,),
+                        //person info
+                        Text('${fullname.toLowerCase()}',style: TextStyle(fontWeight: FontWeight.bold,fontSize: 16,color: Colors.black),),
+                        SizedBox(height: 3,),
+                        Text('${email}',style: TextStyle(fontWeight: FontWeight.bold,fontSize: 14,color: Colors.grey.shade800),),
+                        SizedBox(height: 3,),
+                        //My Counts
                         Container(
-                          padding: EdgeInsets.all(2),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(70),
-                            border: Border.all(
-                              width: 1.5,
-                              color: Color.fromRGBO(193, 53, 132, 1),
-                            ),
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(35),
-                            child: _image == null
-                                ? Image(
-                              image: AssetImage(
-                                  "assets/images/ic_person.png"),
-                              width: 70,
-                              height: 70,
-                              fit: BoxFit.cover,
-                            )
-                                : Image.file(_image!,
-                              height: 70,
-                              width: 70,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                        Container(
-                          width: 80,
-                          height: 80,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            crossAxisAlignment: CrossAxisAlignment.end,
+                          margin: EdgeInsets.only(top: 3),
+                          child: Row(
                             children: [
-                              Icon(
-                                Icons.add_circle,
-                                color: Colors.purple,
-                              )
+                              Expanded(
+                                child: Column(
+                                  children: [
+                                    Text("${count_post}",
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),),
+                                    Text("POSTS",
+                                      style: TextStyle(
+                                        color: Colors.grey,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),),
+                                  ],
+                                ),
+                              ),
+                              Container(height: 25,width: 1,color: Colors.black,),
+                              Expanded(
+                                child: Column(
+                                  children: [
+                                    Text("${cout_followers}",
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),),
+                                    Text("FOLLOWERS",
+                                      style: TextStyle(
+                                        color: Colors.grey,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),),
+                                  ],
+                                ),
+                              ),
+                              Container(height: 25,width: 1,color: Colors.black,),
+                              Expanded(
+                                child: Column(
+                                  children: [
+                                    Text("${count_following}",
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),),
+                                    Text("FOLLOWING",
+                                      style: TextStyle(
+                                        color: Colors.grey,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),),
+                                  ],
+                                ),
+                              ),
                             ],
                           ),
                         ),
+
+                        Row(
+                          children: [
+                            Expanded(child: IconButton(onPressed: (){
+                              setState(() {
+                                axisCount = 1;
+                              });
+                            },
+                                icon: Icon(Icons.list_alt,color: Colors.grey.withOpacity(0.7),)), ),
+                            Expanded(child: IconButton(onPressed: (){
+                              setState(() {
+                                axisCount = 2;
+                              });
+                            },
+                                icon: Icon(Icons.grid_view_sharp,color: Colors.grey.withOpacity(0.7),)), ),
+                          ],
+                        ),
+
+                        //my posts
+                        Expanded(
+                          child: GridView.builder(
+                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: axisCount,
+                              ),
+                              itemCount: items.length,
+                              itemBuilder: (ctx,index){
+                                return _itemOfPosts(items[index]);
+                              }
+
+                          ),
+                        ),
                       ],
-                    )),
-
-                SizedBox(height: 3,),
-                //person info
-                Text('${username.toUpperCase()}',style: TextStyle(fontWeight: FontWeight.bold,fontSize: 16,color: Colors.black),),
-                SizedBox(height: 3,),
-                Text('${email}',style: TextStyle(fontWeight: FontWeight.bold,fontSize: 14,color: Colors.grey.shade800),),
-                SizedBox(height: 3,),
-                //My Counts
-                Container(
-                  margin: EdgeInsets.only(top: 3),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          children: [
-                            Text("${count_post}",
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),),
-                            Text("POSTS",
-                              style: TextStyle(
-                                color: Colors.grey,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),),
-                          ],
-                        ),
-                      ),
-                      Container(height: 25,width: 1,color: Colors.black,),
-                      Expanded(
-                        child: Column(
-                          children: [
-                            Text("${cout_followers}",
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),),
-                            Text("FOLLOWERS",
-                              style: TextStyle(
-                                color: Colors.grey,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),),
-                          ],
-                        ),
-                      ),
-                      Container(height: 25,width: 1,color: Colors.black,),
-                      Expanded(
-                        child: Column(
-                          children: [
-                            Text("${count_following}",
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),),
-                            Text("FOLLOWING",
-                              style: TextStyle(
-                                color: Colors.grey,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),),
-                          ],
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
 
-                Row(
-                  children: [
-                    Expanded(child: IconButton(onPressed: (){
-                      setState(() {
-                        axisCount = 1;
-                      });
-                    },
-                       icon: Icon(Icons.list_alt,color: Colors.grey.withOpacity(0.7),)), ),
-                    Expanded(child: IconButton(onPressed: (){
-                      setState(() {
-                        axisCount = 2;
-                      });
-                    },
-                        icon: Icon(Icons.grid_view_sharp,color: Colors.grey.withOpacity(0.7),)), ),
-                  ],
-                ),
-
-                //my posts
-                Expanded(
-                  child: GridView.builder(
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: axisCount,
-                      ),
-                      itemCount: items.length,
-                      itemBuilder: (ctx,index){
-                        return _itemOfPosts(items[index]);
-                      }
-
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
+          ],
+        ),
 
-        ],
-      ),
     );
   }
   Widget _itemOfPosts(Post post){
@@ -293,7 +344,7 @@ class _MyProfilePageState extends State<MyProfilePage> {
               width: double.infinity,
               child: CachedNetworkImage(
                 width: double.infinity,
-                imageUrl: post.imgpost.toString(),
+                imageUrl: post.img_post.toString(),
                 placeholder: (context,url,) => Center(
                   child: CircularProgressIndicator(),
                 ),

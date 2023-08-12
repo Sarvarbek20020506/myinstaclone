@@ -94,7 +94,7 @@ class _MyLikesPageState extends State<MyLikesPage> {
           ),
           SizedBox(height: 8,),
           CachedNetworkImage(
-            imageUrl: post.imgpost.toString(),
+            imageUrl: post.img_post.toString(),
             placeholder: (context,url){
               return CircularProgressIndicator();
             },

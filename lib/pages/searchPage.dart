@@ -1,3 +1,4 @@
+import 'package:clone_insta/services/db_service.dart';
 import 'package:flutter/material.dart';
 
 import '../models/member_model.dart';
@@ -14,15 +15,27 @@ class _MySearchPageState extends State<MySearchPage> {
    List <Member> items = [];
    var searchController = TextEditingController();
 
+   void _apiSearchMembers(String keywords){
+     setState(() {
+       isLoading = true;
+     });
+     DBService.searchMembers(keywords).then((users) => {
+       _resSearchMember(users),
+     });
+   }
+
+   void _resSearchMember(List<Member> members){
+     setState(() {
+       items = members;
+       isLoading = false;
+     });
+   }
+
    @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    items.add(Member('Sarvarbek', "ganiyevs@mail.com"));
-    items.add(Member('Sardorbek', "aliyevs@mail.com"));
-    items.add(Member('Alijon', "valijonovs@mail.com"));
-    items.add(Member('Salim', "shukurovs@mail.com"));
-    items.add(Member('Nuriddin', "abdumannopovs@mail.com"));
+    _apiSearchMembers("");
   }
 
   @override
@@ -79,15 +92,32 @@ class _MySearchPageState extends State<MySearchPage> {
      height: 65,
       child:Row(
         children: [
-         Container(
-           child:  ClipRRect(
-             borderRadius: BorderRadius.circular(22.5),
-             child: Image(image: AssetImage("assets/images/ic_person.png",),
-             height: 45,
-             width: 45,
-             ),
-           ),
-         ),
+          Container(
+            padding: EdgeInsets.all(2),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(70),
+              border: Border.all(
+                width: 1.5,
+                color: Color.fromRGBO(193, 53, 132, 1),
+              ),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(22.5),
+              child: member.img_url!.isEmpty
+                  ? Image(
+                image: AssetImage("assets/images/ic_person.png"),
+                width: 45,
+                height: 45,
+                fit: BoxFit.cover,
+              )
+                  : Image.network(
+                member.img_url.toString(),
+                width: 45,
+                height: 45,
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
           SizedBox(width: 10,),
           Column(
             mainAxisAlignment: MainAxisAlignment.center,

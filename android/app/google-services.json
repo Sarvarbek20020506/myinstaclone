@@ -29,6 +29,13 @@
             {
               "client_id": "924180049312-7r9i9at9vdulm29llh0cajg2blqvf61j.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "924180049312-6hhfnbgju6c0oud8uciflangrc04a1fg.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.cloneInsta"
+              }
             }
           ]
         }

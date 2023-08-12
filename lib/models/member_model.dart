@@ -4,6 +4,7 @@ class Member{
   String? email;
   String? password;
   String? img_url;
+
   String? device_id;
   String? device_type;
   String? device_token;

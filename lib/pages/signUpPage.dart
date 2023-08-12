@@ -1,8 +1,11 @@
 import 'package:clone_insta/pages/homePage.dart';
 import 'package:clone_insta/pages/login_gape.dart';
 import 'package:clone_insta/services/auth_service.dart';
+import 'package:clone_insta/services/db_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
+import '../models/member_model.dart';
 class SignUpPage extends StatefulWidget {
   static final String id = "signup_page";
   const SignUpPage({super.key});
@@ -19,7 +22,7 @@ class _SignUpPageState extends State<SignUpPage> {
   var passwordController = TextEditingController();
   var cpasswordController = TextEditingController();
 
-  _doSignUp() {
+  _doSignUp() async {
     String fullname = fullnameController.text.toString().trim();
     String email = emailController.text.toString().trim();
     String password = passwordController.text.toString().trim();
@@ -34,17 +37,20 @@ class _SignUpPageState extends State<SignUpPage> {
       isLoading = true;
     });
 
-    AuthService.signUpUser(fullname, email, password).then((value) => {
-      _responseSignUp(value!),
-    });
+   var response = AuthService.signUpUser(fullname, email, password);
+   Member member = Member(fullname, email);
+   DBService.storeMember(member).then((value) => {
+     _storeMemberToDB(member),
+   });
   }
 
-    _responseSignUp(User firebaseUser){
+   void _storeMemberToDB(Member member){
       setState(() {
         isLoading= false;
       });
       Navigator.pushReplacementNamed(context, HomePage.id);
     }
+
     _callSignInPage(){
     Navigator.pushReplacementNamed(context, LogInPage.id);
     }
@@ -124,8 +130,10 @@ class _SignUpPageState extends State<SignUpPage> {
                           ),
                           child: TextField(
                             controller: passwordController,
+                            obscureText: true,
                             decoration: InputDecoration(
                                 hintText: "Password",
+
                                 border: InputBorder.none
                             ),
                           ),
@@ -141,6 +149,7 @@ class _SignUpPageState extends State<SignUpPage> {
                           ),
                           child: TextField(
                             controller: cpasswordController,
+                            obscureText: true,
                             decoration: InputDecoration(
                                 hintText: "Confirm Password",
                                 border: InputBorder.none

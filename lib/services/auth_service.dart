@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:clone_insta/pages/login_gape.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
