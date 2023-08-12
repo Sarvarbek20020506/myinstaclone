@@ -178,13 +178,17 @@ class _MyPostCreatePageState extends State<MyPostCreatePage> {
 
 
                   Container(
+                    margin: EdgeInsets.only(left: 10, right: 10, top: 10),
                     child: TextField(
                       controller: captionController,
+                      style: TextStyle(color: Colors.black),
                       keyboardType: TextInputType.multiline,
                       minLines: 1,
                       maxLines: 5,
                       decoration: InputDecoration(
                         hintText: "Captions",
+                          hintStyle:
+                          TextStyle(fontSize: 17, color: Colors.black38),
                       ),
                     ),
                   ),
