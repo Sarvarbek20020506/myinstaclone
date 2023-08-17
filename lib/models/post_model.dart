@@ -1,10 +1,10 @@
 class Post {
-  String? uid;
+  String uid="";
   String? fullname;
-  String? img_user;
+  String img_user="";
 
   String? id;
-  String? img_post;
+  String img_post = "";
   String? caption;
   String? date;
 
@@ -19,7 +19,9 @@ class Post {
   id= json['id'],
   img_post= json['img_post'],
   caption= json['caption'],
-  date= json['date'];
+  date= json['date'],
+  liked = json['liked'],
+  mine = json['mine'];
 
   Map <String,dynamic> toJson()=>{
     'uid': uid,
@@ -29,6 +31,8 @@ class Post {
     'img_post': img_post,
     'caption': caption,
     'date': date,
+    'liked':liked,
+    'mine':mine,
   };
 
 }

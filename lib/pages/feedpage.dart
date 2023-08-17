@@ -34,6 +34,31 @@ class _MyFeedPageState extends State<MyFeedPage> {
         });
   }
 
+
+  void _apiPostLike(Post post)async{
+    setState(() {
+      isLoading = true;
+    });
+
+    await DBService.likePost(post ,true);
+    setState(() {
+      isLoading = false;
+      post.liked = true;
+    });
+
+  }
+
+  void _apiPostUnLike(Post post)async{
+    setState(() {
+      isLoading = true;
+    });
+
+    await DBService.likePost(post ,false);
+    setState(() {
+      isLoading = false;
+      post.liked = false;
+    });
+  }
   _resLoadFeeds(List<Post> posts) {
     setState(() {
       items = posts;
@@ -77,6 +102,7 @@ class _MyFeedPageState extends State<MyFeedPage> {
               return _itemOfPost(items[index]);
             },
           ),
+
           isLoading
               ? Center(
                   child: CircularProgressIndicator(),
@@ -103,14 +129,14 @@ class _MyFeedPageState extends State<MyFeedPage> {
                   children: [
                     ClipRRect(
                       borderRadius: BorderRadius.circular(40),
-                      child: post.img_user!.isEmpty
+                      child: post.img_user.isEmpty
                           ? Image(
                               height: 40,
                               width: 40,
                               image: AssetImage("assets/images/ic_person.png"),
                             )
                           : Image.network(
-                              post.img_user!,
+                              post.img_user,
                               height: 40,
                               width: 40,
                               fit: BoxFit.cover,
@@ -172,10 +198,20 @@ class _MyFeedPageState extends State<MyFeedPage> {
               Row(
                 children: [
                   IconButton(
-                    onPressed: () {},
-                    icon: Icon(
+                    onPressed: () {
+                      if(!post.liked){
+                        _apiPostLike(post);
+                      }else{
+                        _apiPostUnLike(post);
+                      }
+                    },
+                    icon: post.liked? Icon(
+                      EvaIcons.heart,
+                      color: Colors.red,
+                    ):
+                    Icon(
                       EvaIcons.heartOutline,
-                      color: Colors.grey,
+                      color: Colors.black,
                     ),
                   ),
                   IconButton(

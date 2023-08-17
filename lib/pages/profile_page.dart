@@ -24,7 +24,7 @@ class _MyProfilePageState extends State<MyProfilePage> {
   File? _image;
   int axisCount = 1;
   String fullname ='', email ='', img_url='';
-  int count_post= 2,cout_followers=102, count_following=252;
+  int count_post= 0,cout_followers=0, count_following=0;
 
 
   final ImagePicker _picker = ImagePicker();

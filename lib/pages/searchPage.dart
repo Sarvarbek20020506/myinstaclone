@@ -31,6 +31,34 @@ class _MySearchPageState extends State<MySearchPage> {
      });
    }
 
+   void _apiFollowMember(Member someone)async{
+     setState(() {
+       isLoading =true;
+     });
+
+    await DBService.followMember(someone);
+    setState(() {
+      someone.followed = true;
+      isLoading = false;
+    });
+    await DBService.storePostsToMyFeed(someone);
+   }
+
+
+
+   void _apiUnFollowMember(Member someone)async{
+     setState(() {
+       isLoading =true;
+     });
+
+     await DBService.unfollowMember(someone);
+     setState(() {
+       someone.followed = false;
+       isLoading = false;
+     });
+     await DBService.removePostsToMyFeed(someone);
+   }
+
    @override
   void initState() {
     // TODO: implement initState
@@ -133,15 +161,25 @@ class _MySearchPageState extends State<MySearchPage> {
               //crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Container(
-                  height: 30,
-                  width: 100,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(4),
-                    border: Border.all(width: 1,color: Colors.grey),
-                  ),
-                  child: Center(
-                    child: Text("Follow"),
+                GestureDetector(
+                  onTap:(){
+                    if(member.followed){
+                      _apiUnFollowMember(member);
+                    }else{
+                      _apiFollowMember(member);
+                    }
+                  },
+                  child: Container(
+                    height: 30,
+                    width: 100,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(4),
+                      border: Border.all(width: 1,color: Colors.grey),
+                      //color: member.followed? Colors.blue : Colors.white,
+                    ),
+                    child: Center(
+                      child: member.followed? Text("Following"):Text("Following"),
+                    ),
                   ),
                 ),
               ],

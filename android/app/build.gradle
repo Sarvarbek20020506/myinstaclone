@@ -28,9 +28,13 @@ apply plagin: "com.google.gms.google-services"
 //apply plagin: "com.google.gms.google-services"
 
 android {
+    minSdkVersion 23
+    targetSdkVersion 32
     namespace "com.example.clone_insta"
     compileSdkVersion 27
     ndkVersion flutter.ndkVersion
+    multiDexEnabled true
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8

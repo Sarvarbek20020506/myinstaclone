@@ -1,3 +1,4 @@
+
 import 'dart:async';
 import 'package:clone_insta/models/member_model.dart';
 import 'package:clone_insta/services/auth_service.dart';
@@ -12,6 +13,8 @@ class DBService {
   static String folder_posts = 'posts';
   static String folder_feeds = 'feeds';
 
+  static String folder_following = "following";
+  static String folder_followers = "followers";
   /*
   * Member Related
   * */
@@ -72,9 +75,9 @@ class DBService {
 
   static Future<Post> storePost(Post post) async {
     Member me = await loadMember();
-    post.uid = me.uid;
+    post.uid = me.uid!;
     post.fullname = me.fullname;
-    post.img_user = me.img_url;
+    post.img_user = me.img_url!;
     post.date = Utils.currentDate();
 
     String postId = firestore_db
@@ -128,10 +131,139 @@ class DBService {
         .doc(uid)
         .collection(folder_feeds)
         .get();
-    querySnapshot.docs.forEach((result) {
+    for (var result in querySnapshot.docs) {
       posts.add(Post.fromJson(result.data()));
+    }
+
+    return posts;
+  }
+
+  static Future likePost(Post post, bool liked) async {
+    String uid = AuthService.currentUserId();
+    post.liked = liked;
+
+
+    await firestore_db
+        .collection(folder_users)
+        .doc(uid)
+        .collection(folder_feeds)
+        .doc(post.id)
+        .set(post.toJson());
+
+    if(uid == post.uid){
+    await firestore_db
+        .collection(folder_users)
+        .doc(uid)
+        .collection(folder_posts)
+        .doc(post.id)
+        .set(post.toJson());
+    }
+  }
+
+  static Future<List<Post>> loadLikes() async {
+    String uid = AuthService.currentUserId();
+    List<Post> posts = [];
+
+    var querySnapshot = await firestore_db
+        .collection(folder_users)
+        .doc(uid)
+        .collection(folder_feeds)
+        .where('liked', isEqualTo: true)
+        .get();
+
+    querySnapshot.docs.forEach((result) {
+      Post post = Post.fromJson(result.data());
+      if(post.uid == uid) post.mine = true;
+      posts.add(post);
     });
 
     return posts;
   }
+
+
+  static Future <Member> followMember(Member someone)async{
+    Member me  = await loadMember();
+
+    await firestore_db
+        .collection(folder_users)
+        .doc(me.uid)
+        .collection(folder_following)
+        .doc(someone.uid)
+        .set(someone.toJson());
+
+
+    await firestore_db
+        .collection(folder_users)
+        .doc(someone.uid)
+        .collection(folder_followers)
+        .doc(me.uid)
+        .set(someone.toJson());
+    
+    return someone;
+  }
+  static Future <Member> unfollowMember(Member someone)async{
+    Member me  = await loadMember();
+
+    await firestore_db
+        .collection(folder_users)
+        .doc(me.uid)
+        .collection(folder_following)
+        .doc(someone.uid)
+        .delete();
+
+
+    await firestore_db
+        .collection(folder_users)
+        .doc(someone.uid)
+        .collection(folder_followers)
+        .doc(me.uid)
+        .delete();
+
+    return someone;
+  }
+  
+  
+  static Future storePostsToMyFeed(Member someone)async{
+    List<Post> posts = [];
+    var querySnapshot = await firestore_db
+        .collection(folder_users)
+        .doc(someone.uid)
+        .collection(folder_posts)
+        .get();
+    querySnapshot.docs.forEach((result) { 
+      var post = Post.fromJson(result.data());
+      post.liked= false;
+      posts.add(post);
+    });
+    
+    for(Post post in posts){
+      storeFeeds(post);
+    }
+  }
+
+  static Future removePostsToMyFeed(Member someone)async{
+    List<Post> posts = [];
+    var querySnapshot = await firestore_db
+        .collection(folder_users)
+        .doc(someone.uid)
+        .collection(folder_posts)
+        .get();
+    
+    querySnapshot.docs.forEach((result) {
+      posts.add(Post.fromJson(result.data()));
+      
+      for(Post post in posts){
+        removeFeeds(post);
+      }
+    });
+
+    
+  }
+  static Future removeFeeds(Post post)async{
+    String uid = AuthService.currentUserId();
+    
+    return await firestore_db.collection(folder_users).doc(uid).collection(folder_feeds).doc(post.id).delete();
+  }
+  
+  
 }

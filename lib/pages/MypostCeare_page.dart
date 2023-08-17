@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:clone_insta/services/db_service.dart';
 import 'package:clone_insta/services/file_service.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
