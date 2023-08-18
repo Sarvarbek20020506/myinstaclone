@@ -79,7 +79,7 @@ class _MySearchPageState extends State<MySearchPage> {
       body: Stack(
         children: [
           Container(
-            //height: MediaQuery.of(context).size.height,
+            height: MediaQuery.of(context).size.height,
             padding: EdgeInsets.symmetric(horizontal: 10),
             child: Column(
               children: [
@@ -111,6 +111,9 @@ class _MySearchPageState extends State<MySearchPage> {
               ],
             ),
           ),
+          isLoading ? Center(
+          child: CircularProgressIndicator(),
+          ): SizedBox.shrink(),
         ],
       ),
     );
@@ -173,12 +176,12 @@ class _MySearchPageState extends State<MySearchPage> {
                     height: 30,
                     width: 100,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(4),
-                      border: Border.all(width: 1,color: Colors.grey),
-                      //color: member.followed? Colors.blue : Colors.white,
+                      borderRadius: BorderRadius.circular(5),
+                      border: Border.all(width: 1,color: Colors.black),
+                      color: member.followed? Colors.white : Colors.lightBlue,
                     ),
                     child: Center(
-                      child: member.followed? Text("Following"):Text("Following"),
+                      child: member.followed? Text("Followed"):Text("Follow"),
                     ),
                   ),
                 ),

@@ -9,7 +9,7 @@ class Member{
   String? device_type;
   String? device_token;
 
-  bool followed=true;
+  bool followed = false;
   int? followers_count;
   int? following_count;
 

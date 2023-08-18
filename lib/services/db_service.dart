@@ -39,6 +39,19 @@ class DBService {
     var value = await firestore_db.collection(folder_users).doc(uid).get();
     Member member = Member.fromJson(value.data()!);
 
+    var querySnapshot1 = await firestore_db
+        .collection(folder_users)
+        .doc(uid)
+        .collection(folder_followers)
+        .get();
+    member.followers_count = querySnapshot1.docs.length;
+    var querySnapshot2 = await firestore_db
+        .collection(folder_users)
+        .doc(uid)
+        .collection(folder_following)
+        .get();
+    member.following_count = querySnapshot2.docs.length;
+
     return member;
   }
 

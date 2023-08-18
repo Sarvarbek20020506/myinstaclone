@@ -80,6 +80,9 @@ class _MyProfilePageState extends State<MyProfilePage> {
        this.fullname = member.fullname!;
        this.email = member.email!;
        this.img_url = member.img_url!;
+       this.count_following =member.following_count!;
+       this.cout_followers =member.followers_count!;
+
      });
    }
 
@@ -155,9 +158,7 @@ class _MyProfilePageState extends State<MyProfilePage> {
           SizedBox(width: 10,),
         ],
       ),
-      body: ListView(
-          scrollDirection: Axis.vertical,
-          children: [
+      body:
             Container(
               height: MediaQuery.of(context).size.height,
               width: double.infinity,
@@ -188,7 +189,7 @@ class _MyProfilePageState extends State<MyProfilePage> {
                                   ),
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(35),
-                                    child: img_url == null || img_url.isEmpty
+                                    child: img_url.isEmpty
                                         ? Image(
                                       image: AssetImage(
                                           "assets/images/ic_person.png"),
@@ -328,8 +329,6 @@ class _MyProfilePageState extends State<MyProfilePage> {
                 ],
               ),
             ),
-          ],
-        ),
 
     );
   }
