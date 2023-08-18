@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../models/member_model.dart';
 import '../models/post_model.dart';
+import '../services/utils_servise.dart';
 class MyProfilePage extends StatefulWidget {
   final PageController? pageController;
   const MyProfilePage({Key? key,this.pageController}):super(key:key);
@@ -99,6 +100,18 @@ class _MyProfilePageState extends State<MyProfilePage> {
   void _resLoadPosts(List<Post> posts){
     items = posts;
     count_post = posts.length;
+  }
+
+  void _dialogRemovePosts(Post post)async{
+    var result = await Utils.dialogCommon(context, "Insta Clone", "Do you want delete this post", false);
+    if(result != null && result){
+      setState(() {
+        isLoading=true;
+      });
+      DBService.removePost(post).then((value) => (){
+        _apiloadFeeds();
+      });
+    }
   }
 
 
@@ -310,17 +323,17 @@ class _MyProfilePageState extends State<MyProfilePage> {
                         ),
 
                         //my posts
-                        Expanded(
-                          child: GridView.builder(
-                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: axisCount,
-                              ),
-                              itemCount: items.length,
-                              itemBuilder: (ctx,index){
-                                return _itemOfPosts(items[index]);
-                              }
+                       Expanded(
+                            child: GridView.builder(
+                                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: axisCount,
+                                ),
+                                itemCount: items.length,
+                                itemBuilder: (ctx,index){
+                                  return _itemOfPosts(items[index]);
+                                }
+                            ),
 
-                          ),
                         ),
                       ],
                     ),
@@ -333,30 +346,35 @@ class _MyProfilePageState extends State<MyProfilePage> {
     );
   }
   Widget _itemOfPosts(Post post){
-    return Container(
-      margin: EdgeInsets.all(3),
-      child: Column(
-        children: [
-          Expanded(
-            child:  Container(
-              
-              width: double.infinity,
-              child: CachedNetworkImage(
+    return GestureDetector(
+      onLongPress: (){
+        _dialogRemovePosts(post);
+      },
+      child: Container(
+        margin: EdgeInsets.all(3),
+        child: Column(
+          children: [
+            Expanded(
+              child:  Container(
+
                 width: double.infinity,
-                imageUrl: post.img_post.toString(),
-                placeholder: (context,url,) => Center(
-                  child: CircularProgressIndicator(),
+                child: CachedNetworkImage(
+                  width: double.infinity,
+                  imageUrl: post.img_post.toString(),
+                  placeholder: (context,url,) => Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                  errorWidget: (context,url,error){
+                    return Icon(Icons.error);
+                  },
+                  fit: BoxFit.cover,
                 ),
-                errorWidget: (context,url,error){
-                  return Icon(Icons.error);
-                },
-                fit: BoxFit.cover,
               ),
             ),
-          ),
-          SizedBox(height: 3,),
-          Text(post.caption.toString(),style: TextStyle(color: Colors.black.withOpacity(0.7),),maxLines: 2,),
-        ],
+            SizedBox(height: 3,),
+            Text(post.caption.toString(),style: TextStyle(color: Colors.black.withOpacity(0.7),),maxLines: 2,),
+          ],
+        ),
       ),
     );
   }

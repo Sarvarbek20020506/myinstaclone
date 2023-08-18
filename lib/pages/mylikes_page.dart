@@ -4,6 +4,7 @@ import 'package:eva_icons_flutter/eva_icons_flutter.dart';
 import 'package:flutter/material.dart';
 
 import '../models/post_model.dart';
+import '../services/utils_servise.dart';
 class MyLikesPage extends StatefulWidget {
   final PageController? pageController;
   const MyLikesPage({Key? key, this.pageController}):super(key : key);
@@ -43,6 +44,19 @@ class _MyLikesPageState extends State<MyLikesPage> {
       _apiLoadLike(),
     });
   }
+
+  void _dialogRemovePosts(Post post)async{
+    var result = await Utils.dialogCommon(context, "Insta Clone", "Do you want delete this post", false);
+    if(result != null && result){
+      setState(() {
+        isLoading=true;
+      });
+      DBService.removePost(post).then((value) => (){
+        _apiLoadLike();
+      });
+    }
+  }
+
 
   @override
   void initState() {
@@ -109,9 +123,15 @@ class _MyLikesPageState extends State<MyLikesPage> {
                     ),
                   ],
                 ),
-                IconButton(
-                    onPressed: (){},
-                    icon: Icon(Icons.more_horiz_rounded,color: Colors.black,)),
+                post.mine?IconButton(
+                    onPressed: (){
+                      _dialogRemovePosts(post);
+                    },
+                        icon: Icon(
+                          Icons.more_horiz_rounded,
+                          color: Colors.black,
+                        ))
+                    : SizedBox.shrink(),
               ],
             ),
           ),

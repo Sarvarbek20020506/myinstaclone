@@ -136,6 +136,8 @@ class DBService {
     });
     return posts;
   }
+
+
   static Future<List<Post>> loadFeeds() async {
     List<Post> posts = [];
     String uid = AuthService.currentUserId();
@@ -145,7 +147,9 @@ class DBService {
         .collection(folder_feeds)
         .get();
     for (var result in querySnapshot.docs) {
-      posts.add(Post.fromJson(result.data()));
+      Post post = Post.fromJson(result.data());
+      if(post.uid == uid) post.mine = true;
+      posts.add(post);
     }
 
     return posts;
@@ -272,11 +276,26 @@ class DBService {
 
     
   }
-  static Future removeFeeds(Post post)async{
+
+  static Future removeFeeds(Post post) async {
     String uid = AuthService.currentUserId();
-    
-    return await firestore_db.collection(folder_users).doc(uid).collection(folder_feeds).doc(post.id).delete();
+
+    return await firestore_db
+        .collection(folder_users)
+        .doc(uid)
+        .collection(folder_feeds)
+        .doc(post.id)
+        .delete();
   }
-  
-  
+
+  static Future removePost (Post post)async{
+    String uid = AuthService.currentUserId();
+    await removeFeeds(post);
+    return await firestore_db
+        .collection(folder_users)
+        .doc(uid)
+        .collection(folder_posts)
+        .doc(post.id)
+        .delete();
+  }
 }
