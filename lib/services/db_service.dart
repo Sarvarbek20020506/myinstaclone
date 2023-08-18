@@ -24,9 +24,9 @@ class DBService {
     Map<String, String> params = await Utils.deviceParams();
     print(params);
 
-    member.device_id = params['device_id'];
-    member.device_type = params['device_type'];
-    member.device_token = params['device_token'];
+    member.device_id = params['device_id']!;
+    member.device_type = params['device_type']!;
+    member.device_token = params['device_token']!;
 
     return firestore_db
         .collection(folder_users)

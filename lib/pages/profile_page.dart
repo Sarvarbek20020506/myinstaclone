@@ -114,6 +114,16 @@ class _MyProfilePageState extends State<MyProfilePage> {
     }
   }
 
+  void _dialogLogOut()async{
+    var result = await Utils.dialogCommon(context, "Insta Clone", "Do you want  Log Out", false);
+    if(result != null && result){
+      setState(() {
+        isLoading=true;
+      });
+      AuthService.signOutUser(context);
+    }
+  }
+
 
   void _showPicker(context){
     showModalBottomSheet(
@@ -164,7 +174,7 @@ class _MyProfilePageState extends State<MyProfilePage> {
         actions: [
           IconButton(
           onPressed: (){
-            AuthService.signOutUser(context);
+            _dialogLogOut();
           },
               icon: Icon(Icons.exit_to_app,color:Color.fromRGBO(193, 53, 132,1),),
           ),
